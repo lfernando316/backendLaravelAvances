@@ -1,0 +1,87 @@
+-iniciar creando la app
+composer create-project --prefer-dist laravel/laravel nombre_proyecto
+
+-despues activar el servidor local
+php artisan serve
+
+despues en el archivo .env configurar la base de datos
+
+-generar la key de la aplicacion
+php artisan key:generate
+
+-crear migracion para la tabla de productos
+php artisan make:migration create_products_table --create=products
+
+-despues de crear la migracion ir configurar las columnas de la tabla
+
+-correr las migraciones:
+php artisan migrate
+
+--despues crear el model de la tabla creada
+asegurarse de agregar el protected $fillable =[nombre de los campos]
+php artisan make:model Product -m
+
+--y crear el controlador para productos en este ejemplo
+php artisan make:controller ProductController --resource
+
+--ahora a definir las rutas
+use App\Http\Controllers\ProductController;  importar la ubicacion del controlador
+
+Route::apiResource('products', ProductController::class);   esto define las rutas 
+GET /api/products:
+POST /api/products:
+GET /api/products/{product}: 
+PUT /api/products/{product}:
+DELETE /api/products/{product}: 
+
+-ahora implemento los metodos del controlador
+importo el use del modelo
+
+para el metodo store:  $request->validate([
+            'nombre' => 'required|string|max:255',
+            'precio' => 'required|numeric',
+        ]);
+
+        $product = Product::create($request->all());
+        return response()->json($product, 201);
+		
+para el metodo index
+ return Product::all();
+ 
+ para el metodo show
+	 return Product::findOrFail($id);
+	 
+para el metodo update:  
+	 try {
+        $request->validate([
+            'nombre' => 'sometimes|required|string|max:255',
+            'precio' => 'sometimes|required|numeric',
+        ]);
+
+        $product = Product::findOrFail($id);
+        $product->update($request->all());
+        return response()->json($product, 200);
+    } catch (ModelNotFoundException $exception) {
+        return response()->json(['error' => 'El producto no fue encontrado.'], 404);
+    }
+		
+para el metodo destroy:
+	Product::findOrFail($id)->delete();
+        return response()->json(null, 204);
+		
+-configurar cors:
+	en config/cors en alloweb_origins habilitar la url local: 'http://localhost:8080'
+	
+hacer el frontend:
+
+npm init vue@latest
+cd nombre_proyecto
+npm install
+
+--instalar tailwind
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p
+
+--agregar en el tailwind.config.js en el content: 
+"./index.html",
+    "./src/**/*.{vue,js,ts,jsx,tsx}",
